@@ -7,7 +7,7 @@ namespace Mnk\Cursor;
 /**
  * Array cursor
  */
-class ArrayCursor implements CursorInterface
+class ArrayCursor extends AbstractCursor
 {
 
     /**
@@ -15,18 +15,6 @@ class ArrayCursor implements CursorInterface
      * @var array
      */
     private $items;
-
-    /**
-     * Limit
-     * @var int|null
-     */
-    private $limit;
-
-    /**
-     * Offset
-     * @var int
-     */
-    private $offset = 0;
 
     /**
      * Cursor constructor.
@@ -42,37 +30,15 @@ class ArrayCursor implements CursorInterface
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->toArray());
+        return new \ArrayIterator(
+            \array_slice($this->items, $this->offset, $this->limit)
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setLimit(?int $limit): void
-    {
-        $this->limit = $limit;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setOffset(int $offset): void
-    {
-        $this->offset = $offset;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(): array
-    {
-        return \array_slice($this->items, $this->offset, $this->limit);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
+    protected function doCount(): int
     {
         return \count($this->items);
     }

@@ -7,22 +7,8 @@ namespace Mnk\Cursor;
 /**
  * Callback cursor
  */
-class CallbackCursor implements CursorInterface
+class CallbackCursor extends AbstractCursor
 {
-
-    /**
-     * Query limit.
-     *
-     * @var int|null
-     */
-    private $limit;
-
-    /**
-     * Query offset.
-     *
-     * @var int
-     */
-    private $offset = 0;
 
     /**
      * Result callback
@@ -37,20 +23,6 @@ class CallbackCursor implements CursorInterface
      * @var callable
      */
     private $countCallback;
-
-    /**
-     * Result.
-     *
-     * @var \Traversable
-     */
-    protected $result;
-
-    /**
-     * Count.
-     *
-     * @var int
-     */
-    protected $count;
 
     /**
      * Constructor.
@@ -69,47 +41,15 @@ class CallbackCursor implements CursorInterface
      */
     public function getIterator(): \Traversable
     {
-        if (null === $this->result) {
-            $this->result = ($this->resultCallback)($this->limit, $this->offset);
-        }
-
-        yield from $this->result;
+        yield from ($this->resultCallback)($this->limit, $this->offset);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setLimit(?int $limit): void
+    protected function doCount(): int
     {
-        $this->limit = $limit;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setOffset(int $offset): void
-    {
-        $this->offset = $offset;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(): array
-    {
-        return iterator_to_array($this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        if (null === $this->count) {
-            $this->count = ($this->countCallback)();
-        }
-
-        return $this->count;
+        return ($this->countCallback)();
     }
 
 }

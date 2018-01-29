@@ -89,6 +89,11 @@ class CompositeCursorTest extends TestCase
                 'limit' => 2,
                 'expectedItems' => [7, 8],
             ],
+            'limit outside of cursor' => [
+                'offset' => 6,
+                'limit' => 6,
+                'expectedItems' => [7, 8, 9],
+            ],
         ];
     }
 
@@ -120,11 +125,29 @@ class CompositeCursorTest extends TestCase
      * @param int|null $limit Limit
      * @param array $expectedItems Items
      */
-    public function testGetIterator(int $offset, ?int $limit, array $expectedItems)
+    public function testIterator(int $offset, ?int $limit, array $expectedItems)
     {
         $this->cursor->setOffset($offset);
         $this->cursor->setLimit($limit);
 
         static::assertSame($expectedItems, iterator_to_array($this->cursor), 'Iterator has incorrect items');
+    }
+
+    /**
+     * Test when one of inner cursors is empty
+     */
+    public function testEmptyInnerCursor()
+    {
+        $cursor = new CompositeCursor(
+            new ArrayCursor([]),
+            new ArrayCursor([1, 2, 3]),
+            new ArrayCursor([])
+        );
+
+        $cursor->setLimit(1);
+        $cursor->setOffset(1);
+
+        static::assertSame([2], $cursor->toArray());
+        static::assertCount(3, $cursor);
     }
 }

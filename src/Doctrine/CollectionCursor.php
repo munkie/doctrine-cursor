@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Mnk\Doctrine;
 
 use Doctrine\Common\Collections\Collection;
-use Mnk\Cursor\CursorInterface;
+use Mnk\Cursor\AbstractCursor;
 
 /**
  * Doctrine Collection cursor
  * Better use with EXTRA_LAZY collections, cause slice() method load only items by offset and limit
  * While not extra lazy collections holds all values
  */
-class CollectionCursor implements CursorInterface
+class CollectionCursor extends AbstractCursor
 {
 
     /**
@@ -21,20 +21,6 @@ class CollectionCursor implements CursorInterface
      * @var Collection
      */
     private $collection;
-
-    /**
-     * Offset
-     *
-     * @var int
-     */
-    private $offset = 0;
-
-    /**
-     * Limit
-     *
-     * @var int|null
-     */
-    private $limit;
 
     /**
      * CollectionCursor constructor.
@@ -51,31 +37,7 @@ class CollectionCursor implements CursorInterface
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->toArray());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLimit(?int $limit): void
-    {
-        $this->limit = $limit;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setOffset(int $offset): void
-    {
-        $this->offset = $offset;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(): array
-    {
-        return array_values(
+        yield from array_values(
             $this->collection->slice(
                 $this->offset,
                 $this->limit
@@ -86,9 +48,8 @@ class CollectionCursor implements CursorInterface
     /**
      * {@inheritdoc}
      */
-    public function count(): int
+    protected function doCount(): int
     {
-        return $this->collection->count();
+        return \count($this->collection);
     }
-
 }

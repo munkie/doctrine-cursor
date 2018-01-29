@@ -5,45 +5,22 @@ declare(strict_types=1);
 namespace Mnk\Cursor;
 
 /**
- * Double cursor
- * To combine two cursor and fetch data from them like working with only one cursor
+ * Composite cursor to iterate consecutively through multiple cursor
  */
-class CompositeCursor implements CursorInterface
+class CompositeCursor extends AbstractCursor
 {
 
     /**
-     * First cursor
-     * @var CursorInterface
+     * @var CursorInterface[]
      */
-    private $firstCursor;
+    private $cursors = [];
 
     /**
-     * Second cursor
-     * @var CursorInterface
+     * @param CursorInterface[] $cursors Cursor to composite
      */
-    private $secondCursor;
-
-    /**
-     * Limit
-     * @var int|null
-     */
-    private $limit;
-
-    /**
-     * Offset
-     * @var int
-     */
-    private $offset = 0;
-
-    /**
-     * CompositeCursor constructor.
-     * @param CursorInterface $firstCursor First cursor
-     * @param CursorInterface $secondCursor Second cursor
-     */
-    public function __construct(CursorInterface $firstCursor, CursorInterface $secondCursor)
+    public function __construct(CursorInterface ...$cursors)
     {
-        $this->firstCursor = $firstCursor;
-        $this->secondCursor = $secondCursor;
+        $this->cursors = $cursors;
     }
 
     /**
@@ -51,62 +28,47 @@ class CompositeCursor implements CursorInterface
      */
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator($this->toArray());
-    }
+        $outerOffset = 0;
+        $limitLeft = $this->limit;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setLimit(?int $limit): void
-    {
-        $this->limit = $limit;
-    }
+        foreach ($this->cursors as $cursor) {
+            $count = \count($cursor);
+            $outerOffset += $count;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setOffset(int $offset): void
-    {
-        $this->offset = $offset;
-    }
+            if ($this->offset >= $outerOffset) {
+                continue;
+            }
+            $offset = ($this->offset > $outerOffset - $count) ? $this->offset - $outerOffset + $count : 0;
+            $cursor->setOffset($offset);
 
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(): array
-    {
-        $firstCursorCount = $this->firstCursor->count();
+            if (null !== $limitLeft) {
+                $limit = min($count - $offset, $limitLeft);
+                $cursor->setLimit($limit);
+                $limitLeft -= $limit;
+            }
 
-        if ($this->offset >= $firstCursorCount) {
-            $this->secondCursor->setOffset($this->offset - $firstCursorCount);
-            $this->secondCursor->setLimit($this->limit);
+            // yield from could be used here, but second yield result keys will overwrite first yield keys
+            foreach ($cursor as $item) {
+                yield $item;
+            }
 
-            return $this->secondCursor->toArray();
+            if (0 === $limitLeft) {
+                break;
+            }
         }
-
-        $this->firstCursor->setOffset($this->offset);
-
-        if (null === $this->limit) {
-            return array_merge($this->firstCursor->toArray(), $this->secondCursor->toArray());
-        }
-
-        if ($this->offset + $this->limit <= $firstCursorCount) {
-            $this->firstCursor->setLimit($this->limit);
-
-            return $this->firstCursor->toArray();
-        }
-
-        $this->secondCursor->setLimit($this->offset + $this->limit - $firstCursorCount);
-
-        return array_merge($this->firstCursor->toArray(), $this->secondCursor->toArray());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function count(): int
+    protected function doCount(): int
     {
-        return $this->firstCursor->count() + $this->secondCursor->count();
+        return (int) array_reduce(
+            $this->cursors,
+            function (int $carry, CursorInterface $cursor): int {
+                return $carry + \count($cursor);
+            },
+            0
+        );
     }
-
 }

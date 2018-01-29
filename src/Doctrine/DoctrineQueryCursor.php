@@ -57,10 +57,8 @@ class DoctrineQueryCursor implements CursorInterface
             return new \ArrayIterator();
         }
 
-        return new \ArrayIterator(
-            // getResult() was forcing object hydrate mode, execute() will keep previously set hydration mode
-            $this->itemsQuery->execute()
-        );
+        // getResult() was forcing object hydrate mode, execute() will keep previously set hydration mode
+        return yield from $this->itemsQuery->execute();
     }
 
     /**
@@ -84,7 +82,7 @@ class DoctrineQueryCursor implements CursorInterface
      */
     public function toArray(): array
     {
-        return iterator_to_array($this);
+        return iterator_to_array($this, false);
     }
 
     /**
@@ -121,7 +119,7 @@ class DoctrineQueryCursor implements CursorInterface
             $fromAlias = $fromAlias ?? $queryBuilder->getRootAliases()[0];
             $select = "COUNT(DISTINCT {$fromAlias})";
         } else {
-            // Dirty trick cause doctrine does not support COUNT(*)
+            // Dirty trick cause doctrine query builder does not support COUNT(*)
             $select = 'COUNT(1)';
         }
 
@@ -136,7 +134,7 @@ class DoctrineQueryCursor implements CursorInterface
      * Create count query from items query builder
      *
      * @param QueryBuilder $queryBuilder Items query builder
-     * @param AbstractQuery|null $query Custom item query
+     * @param AbstractQuery|null $itemsQuery Custom item query
      * @param bool $distinctCount Use COUNT(DISTINCT alias). False by default
      * @param string|null $fromAlias From table alias for distinct
      *
@@ -144,15 +142,15 @@ class DoctrineQueryCursor implements CursorInterface
      */
     public static function fromQueryBuilder(
         QueryBuilder $queryBuilder,
-        AbstractQuery $query = null,
+        AbstractQuery $itemsQuery = null,
         bool $distinctCount = false,
         string $fromAlias = null
     ): self
     {
-        $query = $query ?? $queryBuilder->getQuery();
+        $itemsQuery = $itemsQuery ?? $queryBuilder->getQuery();
 
         $countQuery = static::createCountQueryBuilder($queryBuilder, $distinctCount, $fromAlias)->getQuery();
 
-        return new static($query, $countQuery);
+        return new static($itemsQuery, $countQuery);
     }
 }
