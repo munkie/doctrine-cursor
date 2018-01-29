@@ -1,0 +1,23 @@
+version: '2.1'
+
+services:
+
+    phpunit:
+        build:
+            context: .
+            dockerfile: php.Dockerfile
+        command: php -v
+        volumes:
+            - .:/var/www/test
+        working_dir: /var/www/test
+        depends_on:
+            - postgres
+
+    postgres:
+        image: postgres:9.6
+        environment:
+            POSTGRES_PASSWORD: cursor
+            POSTGRES_USER: cursor
+            POSTGRES_DB: cursor
+        ports:
+            - 5432:5432
