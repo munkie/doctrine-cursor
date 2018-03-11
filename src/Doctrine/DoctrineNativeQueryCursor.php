@@ -7,7 +7,6 @@ namespace Mnk\Doctrine;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NativeQuery;
 use Mnk\Cursor\AbstractCursor;
-use Mnk\Cursor\CursorInterface;
 
 /**
  * Cursor that takes two native db queries

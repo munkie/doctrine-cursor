@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mnk\Tests\Cursor;
+namespace Mnk\Tests\Unit\Cursor;
 
 use Mnk\Cursor\ArrayCursor;
 use PHPUnit\Framework\TestCase;

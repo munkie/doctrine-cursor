@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mnk\Tests\Doctrine;
+namespace Mnk\Tests\Unit\Doctrine;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Mnk\Doctrine\CollectionCursor;

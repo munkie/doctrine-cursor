@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mnk\Tests\Doctrine;
+namespace Mnk\Tests\Unit\Doctrine;
 
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Configuration;

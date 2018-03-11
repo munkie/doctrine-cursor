@@ -13,7 +13,7 @@ class CompositeCursor extends AbstractCursor
     /**
      * @var CursorInterface[]
      */
-    private $cursors = [];
+    private $cursors;
 
     /**
      * @param CursorInterface[] $cursors Cursor to composite
