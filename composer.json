@@ -1,5 +1,5 @@
 {
-  "name": "munkie/doctrine-orm-cursor",
+  "name": "munkie/doctrine-cursor",
   "type": "project",
   "license": "MIT",
   "description": "Paginatable cursor implementation for Doctrine ORM",
