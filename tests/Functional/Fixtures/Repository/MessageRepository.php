@@ -11,6 +11,9 @@ use Mnk\Doctrine\DoctrineOrmQueryCursor;
 use Mnk\Tests\Functional\Fixtures\Entity\Message;
 use Mnk\Tests\Functional\Fixtures\Entity\Topic;
 
+/**
+ * @method Message|null find($id, $lockMode = null, $lockVersion = null)
+ */
 class MessageRepository extends DoctrineCursorRepository
 {
     /**
