@@ -27,7 +27,6 @@ abstract class AbstractCursor implements CursorInterface
      */
     private $count;
 
-
     /**
      * {@inheritdoc}
      */
@@ -52,6 +51,11 @@ abstract class AbstractCursor implements CursorInterface
         return iterator_to_array($this, false);
     }
 
+    /**
+     * Get cursor items list with applied limit and offset as traversable object
+     *
+     * @return \Traversable
+     */
     public function getIterator(): \Traversable
     {
         if (0 === $this->limit) {
@@ -61,9 +65,10 @@ abstract class AbstractCursor implements CursorInterface
         return $this->doIterate();
     }
 
-
     /**
-     * {@inheritdoc}
+     * Get total items in cursor, is not affected by limit and offset
+     *
+     * @return int
      */
     public function count(): int
     {

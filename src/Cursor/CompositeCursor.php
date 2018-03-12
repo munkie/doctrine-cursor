@@ -11,6 +11,8 @@ class CompositeCursor extends AbstractCursor
 {
 
     /**
+     * Cursors to iterate throught
+     *
      * @var CursorInterface[]
      */
     private $cursors;
@@ -47,7 +49,8 @@ class CompositeCursor extends AbstractCursor
                 $limitLeft -= $limit;
             }
 
-            // yield from could be used here, but second yield result keys will overwrite first yield keys
+            // "yield from" could be used here, but second "yield from" result keys will overwrite first yield keys
+            // when iterator_to_array function is used with $use_keys flag=true
             foreach ($cursor as $item) {
                 yield $item;
             }

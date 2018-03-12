@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Mnk\Cursor;
 
-/**
- * Callback cursor
- */
 class CallbackCursor extends AbstractCursor
 {
-
     /**
-     * Result callback
+     * Items callback,
+     * should have following signature
+     *
+     * function (?int $limit, int $offset): iterable { ... }
      *
      * @var callable
      */
-    private $resultCallback;
+    private $itemsCallback;
 
     /**
      * Count callback
+     * should have following signature
+     *
+     * function (): int { ... }
      *
      * @var callable
      */
@@ -27,12 +29,12 @@ class CallbackCursor extends AbstractCursor
     /**
      * Constructor.
      *
-     * @param callable $resultCallback Result callback
+     * @param callable $itemsCallback Items callback
      * @param callable $countCallback Count callback
      */
-    public function __construct(callable $resultCallback, callable $countCallback)
+    public function __construct(callable $itemsCallback, callable $countCallback)
     {
-        $this->resultCallback = $resultCallback;
+        $this->itemsCallback = $itemsCallback;
         $this->countCallback = $countCallback;
     }
 
@@ -41,7 +43,7 @@ class CallbackCursor extends AbstractCursor
      */
     protected function doIterate(): \Traversable
     {
-        yield from ($this->resultCallback)($this->limit, $this->offset);
+        yield from ($this->itemsCallback)($this->limit, $this->offset);
     }
 
     /**

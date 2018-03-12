@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Mnk\Cursor;
 
-/**
- * Array cursor
- */
 class ArrayCursor extends AbstractCursor
 {
-
     /**
      * Items
      * @var array
@@ -42,5 +38,4 @@ class ArrayCursor extends AbstractCursor
     {
         return \count($this->items);
     }
-
 }

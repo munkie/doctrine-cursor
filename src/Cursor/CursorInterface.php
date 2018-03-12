@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mnk\Cursor;
 
-/**
- * Interface CursorInterface
- */
 interface CursorInterface extends \Countable, \IteratorAggregate
 {
 
@@ -15,7 +12,7 @@ interface CursorInterface extends \Countable, \IteratorAggregate
      * Says how many items (not more then) should be returned by getItems method
      * If limit was not set then all items of cursor should be returned
      *
-     * @param int $limit
+     * @param int|null $limit
      */
     public function setLimit(?int $limit): void;
 
@@ -28,7 +25,7 @@ interface CursorInterface extends \Countable, \IteratorAggregate
     public function setOffset(int $offset): void;
 
     /**
-     * Get cursor items list as array with applied limit and query
+     * Get cursor items list as array with applied limit and offset
      *
      * @return array
      */

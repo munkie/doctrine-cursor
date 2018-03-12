@@ -11,7 +11,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class KnpPagerCursorSubscriber implements EventSubscriberInterface
 {
-
     /**
      * Handle knp pager items event
      *
