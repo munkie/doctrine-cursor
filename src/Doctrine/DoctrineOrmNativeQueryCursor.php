@@ -68,7 +68,6 @@ class DoctrineOrmNativeQueryCursor extends AbstractCursor
     /**
      * {@inheritdoc}
      *
-     * @throws \Doctrine\ORM\NoResultException If count query returns 0 rows
      * @throws \Doctrine\ORM\NonUniqueResultException If count query returns more than one row
      */
     protected function doCount(): int

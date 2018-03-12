@@ -69,7 +69,7 @@ class Message
         return $this->body;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
     }
