@@ -35,7 +35,7 @@ class CollectionCursor extends AbstractCursor
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    protected function doIterate(): \Traversable
     {
         yield from array_values(
             $this->collection->slice(

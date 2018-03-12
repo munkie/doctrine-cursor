@@ -12,13 +12,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
 use Doctrine\ORM\NativeQuery;
 use Doctrine\ORM\Query;
-use Mnk\Doctrine\DoctrineNativeQueryCursor;
+use Mnk\Doctrine\DoctrineOrmNativeQueryCursor;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test @see DoctrineNativeQueryCursor
+ * Test @see DoctrineOrmNativeQueryCursor
  */
-class DoctrineNativeQueryCursorTest extends TestCase
+class DoctrineOrmNativeQueryCursorTest extends TestCase
 {
 
     /**
@@ -76,7 +76,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
 
         $countQuery = $this->createNativeQuery();
 
-        $cursor = new DoctrineNativeQueryCursor(
+        $cursor = new DoctrineOrmNativeQueryCursor(
             $itemsQuery,
             $countQuery
         );
@@ -97,7 +97,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
         $result = [1, 2, 3];
 
         $sql = 'SELECT * FROM table';
-        $cursor = new DoctrineNativeQueryCursor(
+        $cursor = new DoctrineOrmNativeQueryCursor(
             $this->createNativeQuery($sql),
             $this->createNativeQuery()
         );
@@ -123,7 +123,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
      */
     public function testIteratorDbQueryLimitOffset(string $sql, ?int $limit, int $offset, string $expectedSql)
     {
-        $cursor = new DoctrineNativeQueryCursor(
+        $cursor = new DoctrineOrmNativeQueryCursor(
             $this->createNativeQuery($sql),
             $this->createNativeQuery()
         );
@@ -174,7 +174,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
     public function testQueryIsNotExecutedWhenLimitIsZero()
     {
         $sql = 'SELECT * FROM table';
-        $cursor = new DoctrineNativeQueryCursor(
+        $cursor = new DoctrineOrmNativeQueryCursor(
             $this->createNativeQuery($sql),
             $this->createNativeQuery()
         );
@@ -198,7 +198,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
 
         $itemsQuery = $this->createNativeQuery();
         $countQuery = $this->createNativeQuery();
-        $cursor = new DoctrineNativeQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmNativeQueryCursor($itemsQuery, $countQuery);
 
         $this->setExpectedHydrationResult($result);
 
@@ -221,7 +221,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
             ->with($countSql)
             ->willReturn($count);
 
-        $cursor = new DoctrineNativeQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmNativeQueryCursor($itemsQuery, $countQuery);
 
         static::assertCount($count, $cursor, 'Incorrect count returned');
     }
@@ -242,7 +242,7 @@ class DoctrineNativeQueryCursorTest extends TestCase
             ->with($countSql)
             ->willReturn($count);
 
-        $cursor = new DoctrineNativeQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmNativeQueryCursor($itemsQuery, $countQuery);
 
         static::assertCount($count, $cursor, 'Incorrect count returned for first time');
         static::assertCount($count, $cursor, 'Incorrect count returned for second time');

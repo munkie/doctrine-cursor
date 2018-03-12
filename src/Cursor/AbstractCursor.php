@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mnk\Cursor;
 
-/**
- *
- */
 abstract class AbstractCursor implements CursorInterface
 {
     /**
@@ -55,6 +52,16 @@ abstract class AbstractCursor implements CursorInterface
         return iterator_to_array($this, false);
     }
 
+    public function getIterator(): \Traversable
+    {
+        if (0 === $this->limit) {
+            return new \ArrayIterator();
+        }
+
+        return $this->doIterate();
+    }
+
+
     /**
      * {@inheritdoc}
      */
@@ -66,6 +73,13 @@ abstract class AbstractCursor implements CursorInterface
 
         return $this->count;
     }
+
+    /**
+     * Creates iterator with items
+     *
+     * @return \Traversable
+     */
+    abstract protected function doIterate(): \Traversable;
 
     /**
      * Calculates count value

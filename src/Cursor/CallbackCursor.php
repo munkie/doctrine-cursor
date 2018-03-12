@@ -39,7 +39,7 @@ class CallbackCursor extends AbstractCursor
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    protected function doIterate(): \Traversable
     {
         yield from ($this->resultCallback)($this->limit, $this->offset);
     }

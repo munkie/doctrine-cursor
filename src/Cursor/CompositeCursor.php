@@ -26,7 +26,7 @@ class CompositeCursor extends AbstractCursor
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    protected function doIterate(): \Traversable
     {
         $outerOffset = 0;
         $limitLeft = $this->limit;

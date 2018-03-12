@@ -13,7 +13,7 @@ use Mnk\Cursor\AbstractCursor;
  * first to get items with applied limit and offset
  * second that will return total count
  */
-class DoctrineNativeQueryCursor extends AbstractCursor
+class DoctrineOrmNativeQueryCursor extends AbstractCursor
 {
 
     /**
@@ -52,13 +52,8 @@ class DoctrineNativeQueryCursor extends AbstractCursor
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    protected function doIterate(): \Traversable
     {
-        // Do not execute db query if limit is 0 it will return empty result anyway
-        if (0 === $this->limit) {
-            return new \ArrayIterator();
-        }
-
         $limitOffsetSql = $this->itemsQuery
             ->getEntityManager()
             ->getConnection()

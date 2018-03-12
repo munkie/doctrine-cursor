@@ -9,13 +9,13 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
-use Mnk\Doctrine\DoctrineQueryCursor;
+use Mnk\Doctrine\DoctrineOrmQueryCursor;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test @see DoctrineQueryCursor
+ * Test @see DoctrineOrmQueryCursor
  */
-class DoctrineQueryCursorTest extends TestCase
+class DoctrineOrmQueryCursorTest extends TestCase
 {
     /**
      * Entity manager mock
@@ -43,40 +43,6 @@ class DoctrineQueryCursorTest extends TestCase
     }
 
     /**
-     * Test setLimit
-     */
-    public function testSetLimit()
-    {
-        $limit = 10;
-
-        $itemsQuery = $this->createQuery();
-        $countQuery = $this->createQuery();
-        $cursor = new DoctrineQueryCursor($itemsQuery, $countQuery);
-
-        $cursor->setLimit($limit);
-
-        static::assertSame($limit, $itemsQuery->getMaxResults(), 'Incorrect limit set in items query');
-        static::assertNull($countQuery->getMaxResults(), 'Limit should not be set in count query');
-    }
-
-    /**
-     * Test setOffset
-     */
-    public function testSetOffset()
-    {
-        $offset = 10;
-
-        $itemsQuery = $this->createQuery();
-        $countQuery = $this->createQuery();
-        $cursor = new DoctrineQueryCursor($itemsQuery, $countQuery);
-
-        $cursor->setOffset($offset);
-
-        static::assertSame($offset, $itemsQuery->getFirstResult(), 'Incorrect offset set in items query');
-        static::assertNull($countQuery->getFirstResult(), 'Offset should not be set in count query');
-    }
-
-    /**
      * Test cursor as iterator
      */
     public function testIterator()
@@ -85,7 +51,7 @@ class DoctrineQueryCursorTest extends TestCase
         $itemsQueryMock = $this->createItemsQueryMock($result);
 
         $countQuery = $this->createQuery();
-        $cursor = new DoctrineQueryCursor($itemsQueryMock, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQueryMock, $countQuery);
 
         static::assertSame($result, iterator_to_array($cursor), 'Iterator values are incorrect');
     }
@@ -98,14 +64,11 @@ class DoctrineQueryCursorTest extends TestCase
         $itemsQueryMock = $this->createQueryMock('execute', 'setMaxResults', 'getMaxResults');
         $itemsQueryMock->expects(static::never())
             ->method('execute');
-        $itemsQueryMock->expects(static::once())
-            ->method('setMaxResults')
-            ->with(0);
         $itemsQueryMock->method('getMaxResults')
             ->willReturn(0);
 
         $countQuery = $this->createQuery();
-        $cursor = new DoctrineQueryCursor($itemsQueryMock, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQueryMock, $countQuery);
         $cursor->setLimit(0);
 
         static::assertSame([], iterator_to_array($cursor), 'Iterator should return empty array');
@@ -120,7 +83,7 @@ class DoctrineQueryCursorTest extends TestCase
         $itemsQueryMock = $this->createItemsQueryMock($result);
 
         $countQuery = $this->createQuery();
-        $cursor = new DoctrineQueryCursor($itemsQueryMock, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQueryMock, $countQuery);
 
         static::assertSame($result, $cursor->toArray(), 'Returned items array is incorrect');
     }
@@ -138,7 +101,7 @@ class DoctrineQueryCursorTest extends TestCase
             ->method('getSingleScalarResult')
             ->willReturn($count);
 
-        $cursor = new DoctrineQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQuery, $countQuery);
 
         static::assertCount($count, $cursor, 'Incorrect count returned');
     }
@@ -156,7 +119,7 @@ class DoctrineQueryCursorTest extends TestCase
             ->method('getSingleScalarResult')
             ->willReturn($count);
 
-        $cursor = new DoctrineQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQuery, $countQuery);
 
         static::assertCount($count, $cursor, 'Incorrect count returned for first time');
         static::assertCount($count, $cursor, 'Incorrect count returned for second time');
@@ -187,7 +150,7 @@ class DoctrineQueryCursorTest extends TestCase
             ->select('a, b')
             ->orderBy('a.id', 'DESC');
 
-        $countQuery = DoctrineQueryCursor::createCountQueryBuilder($queryBuilder, $distinct, $fromAlias);
+        $countQuery = DoctrineOrmQueryCursor::createCountQueryBuilder($queryBuilder, $distinct, $fromAlias);
 
         static::assertSame(
             $expectedDQL,
@@ -257,7 +220,7 @@ class DoctrineQueryCursorTest extends TestCase
             ->select('a, b')
             ->orderBy('a.id', 'DESC');
 
-        $cursor = DoctrineQueryCursor::fromQueryBuilder($queryBuilder);
+        $cursor = DoctrineOrmQueryCursor::fromQueryBuilder($queryBuilder);
 
         /** @var Query $itemsQuery */
         $itemsQuery = $this->getObjectPrivatePropertyValue($cursor, 'itemsQuery');
@@ -325,14 +288,12 @@ class DoctrineQueryCursorTest extends TestCase
      *
      * @return AbstractQuery
      */
-    private function createItemsQueryMock($result, int $maxResults = null): AbstractQuery
+    private function createItemsQueryMock($result): AbstractQuery
     {
-        $queryMock = $this->createQueryMock('execute', 'getMaxResults');
+        $queryMock = $this->createQueryMock('execute', 'setMaxResults', 'setFirstResult');
         $queryMock->expects(static::once())
             ->method('execute')
             ->willReturn($result);
-        $queryMock->method('getMaxResults')
-            ->willReturn($maxResults);
 
         return $queryMock;
     }

@@ -28,7 +28,7 @@ class ArrayCursor extends AbstractCursor
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    protected function doIterate(): \Traversable
     {
         return new \ArrayIterator(
             \array_slice($this->items, $this->offset, $this->limit)

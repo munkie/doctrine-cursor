@@ -10,14 +10,14 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
 use Mnk\Cursor\CursorInterface;
-use Mnk\Doctrine\DoctrineQueryCursor;
+use Mnk\Doctrine\DoctrineOrmQueryCursor;
 use Mnk\Tests\Functional\Fixtures\Entity\Message;
 use Mnk\Tests\Functional\Fixtures\Entity\Topic;
 use Mnk\Tests\Functional\Fixtures\Repository\MessageRepository;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Functional tests for @see DoctrineQueryCursor
+ * Functional tests for @see DoctrineOrmQueryCursor
  */
 class DoctrineQueryTest extends TestCase
 {
@@ -107,7 +107,7 @@ class DoctrineQueryTest extends TestCase
         $this->entityManager->clear();
     }
 
-    public function testMessagesCursor()
+    public function testRepositoryCursorByQueryBuilder()
     {
         /** @var MessageRepository $repo */
         $repo = $this->entityManager->getRepository(Message::class);
@@ -142,6 +142,73 @@ class DoctrineQueryTest extends TestCase
         static::assertEquals($expected, $sqls, 'Incorrect queries sqls were generated');
     }
 
+    public function testRepositoryCursorByCriteria()
+    {
+        /** @var MessageRepository $repo */
+        $repo = $this->entityManager->getRepository(Message::class);
+
+        /** @var Topic $topic */
+        $topic = $this->entityManager->find(Topic::class, 1);
+
+        $this->sqlLogger->enabled = true;
+
+        $cursor = $repo->findByTopicUsingCriteria($topic);
+
+        static::assertInstanceOf(CursorInterface::class, $cursor);
+
+        $cursor->setLimit(3);
+        $cursor->setOffset(1);
+
+        static::assertSame([11, 12, 13], $this->flattenCursor($cursor), 'Incorrect result with 3,1 limit,offset');
+
+        $cursor->setOffset(2);
+
+        static::assertSame([12, 13, 14], $this->flattenCursor($cursor), 'Incorrect result woth 3,2 limit,offset');
+
+        static::assertCount(20, $cursor, 'Incorrect count result');
+
+        $sqls = $this->getLoggedSqls();
+
+        $expected = [
+            'SELECT t0.id AS id_1, t0.body AS body_2, t0.createdAt AS createdat_3, t0.topic_id AS topic_id_4 FROM message t0 WHERE t0.topic_id = ? ORDER BY t0.createdAt ASC, t0.id ASC LIMIT 3 OFFSET 1',
+            'SELECT t0.id AS id_1, t0.body AS body_2, t0.createdAt AS createdat_3, t0.topic_id AS topic_id_4 FROM message t0 WHERE t0.topic_id = ? ORDER BY t0.createdAt ASC, t0.id ASC LIMIT 3 OFFSET 2',
+            'SELECT COUNT(*) FROM message t0 WHERE t0.topic_id = ?'
+        ];
+        static::assertEquals($expected, $sqls, 'Incorrect queries sqls were generated');
+    }
+
+    public function testRepositoryCursorAll()
+    {
+        /** @var MessageRepository $repo */
+        $repo = $this->entityManager->getRepository(Message::class);
+
+        $this->sqlLogger->enabled = true;
+
+        $cursor = $repo->findCursorAll();
+
+        static::assertInstanceOf(CursorInterface::class, $cursor);
+
+        $cursor->setLimit(3);
+        $cursor->setOffset(1);
+
+        static::assertSame([11, 12, 13], $this->flattenCursor($cursor), 'Incorrect result with 3,1 limit,offset');
+
+        $cursor->setOffset(2);
+
+        static::assertSame([12, 13, 14], $this->flattenCursor($cursor), 'Incorrect result woth 3,2 limit,offset');
+
+        static::assertCount(25, $cursor, 'Incorrect count result');
+
+        $sqls = $this->getLoggedSqls();
+
+        $expected = [
+            'SELECT t0.id AS id_1, t0.body AS body_2, t0.createdAt AS createdat_3, t0.topic_id AS topic_id_4 FROM message t0 LIMIT 3 OFFSET 1',
+            'SELECT t0.id AS id_1, t0.body AS body_2, t0.createdAt AS createdat_3, t0.topic_id AS topic_id_4 FROM message t0 LIMIT 3 OFFSET 2',
+            'SELECT COUNT(*) FROM message t0'
+        ];
+        static::assertEquals($expected, $sqls, 'Incorrect queries sqls were generated');
+    }
+
     public function testCustomCountQuery()
     {
         $itemsQuery = new Query($this->entityManager);
@@ -151,7 +218,7 @@ class DoctrineQueryTest extends TestCase
         // Lets use weird way to get count of messages in table
         $countQuery->setDQL('SELECT MAX(m.id) FROM '.Message::class.' m');
 
-        $cursor = new DoctrineQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQuery, $countQuery);
         static::assertCount(34, $cursor, 'Incorrect result of custom count query');
     }
 
@@ -165,7 +232,7 @@ class DoctrineQueryTest extends TestCase
         $countQuery = new Query($this->entityManager);
         $countQuery->setDQL('SELECT COUNT(1) FROM '.Message::class.' m');
 
-        $cursor = new DoctrineQueryCursor($itemsQuery, $countQuery);
+        $cursor = new DoctrineOrmQueryCursor($itemsQuery, $countQuery);
         $cursor->setLimit(0);
 
         static::assertSame([], $cursor->toArray());
@@ -186,7 +253,7 @@ class DoctrineQueryTest extends TestCase
             ->setParameter('topic', 1)
             ->orderBy('m.id', 'DESC');
 
-        $cursor = DoctrineQueryCursor::fromQueryBuilder($queryBuilder, null, true);
+        $cursor = DoctrineOrmQueryCursor::fromQueryBuilder($queryBuilder, null, true);
 
         static::assertCount(20, $cursor, 'Incorrect result of count query');
 
@@ -209,12 +276,12 @@ class DoctrineQueryTest extends TestCase
             ->setParameter('mids', [10, 15, 20, 30])
             ->orderBy('t.id', 'DESC');
 
-        $cursor = DoctrineQueryCursor::fromQueryBuilder($queryBuilder);
+        $cursor = DoctrineOrmQueryCursor::fromQueryBuilder($queryBuilder);
 
         static::assertSame([2, 1], $this->flattenCursor($cursor));
         static::assertCount(4, $cursor, 'Count should be 4 because joined messages table matched 4 times');
 
-        $distinctCursor = DoctrineQueryCursor::fromQueryBuilder($queryBuilder, null, true);
+        $distinctCursor = DoctrineOrmQueryCursor::fromQueryBuilder($queryBuilder, null, true);
         static::assertCount(2, $distinctCursor, 'With distinct flag count should return 2 - number of distinct topics');
     }
 

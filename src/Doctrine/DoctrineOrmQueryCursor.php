@@ -7,13 +7,14 @@ namespace Mnk\Doctrine;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
+use Mnk\Cursor\AbstractCursor;
 use Mnk\Cursor\CursorInterface;
 
 /**
  * Cursor that takes two queries: one to get items with applied limit and offset
  * And second that will return total count
  */
-class DoctrineQueryCursor implements CursorInterface
+class DoctrineOrmQueryCursor extends AbstractCursor
 {
     /**
      * Query that returns items
@@ -31,13 +32,6 @@ class DoctrineQueryCursor implements CursorInterface
     private $countQuery;
 
     /**
-     * Count query result
-     *
-     * @var int
-     */
-    private $count;
-
-    /**
      * @param AbstractQuery|Query $itemsQuery Items query
      * @param AbstractQuery $countQuery Count query
      */
@@ -50,12 +44,10 @@ class DoctrineQueryCursor implements CursorInterface
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    protected function doIterate(): \Traversable
     {
-        // Do not execute query if limit is 0 it will return empty result anyway
-        if (0 === $this->itemsQuery->getMaxResults()) {
-            return new \ArrayIterator();
-        }
+        $this->itemsQuery->setFirstResult($this->offset);
+        $this->itemsQuery->setMaxResults($this->limit);
 
         // getResult() was forcing object hydrate mode, execute() will keep previously set hydration mode
         return yield from $this->itemsQuery->execute();
@@ -63,41 +55,12 @@ class DoctrineQueryCursor implements CursorInterface
 
     /**
      * {@inheritdoc}
-     */
-    public function setLimit(?int $limit): void
-    {
-        $this->itemsQuery->setMaxResults($limit);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setOffset(int $offset): void
-    {
-        $this->itemsQuery->setFirstResult($offset);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(): array
-    {
-        return iterator_to_array($this, false);
-    }
-
-    /**
-     * {@inheritdoc}
      *
-     * @throws \Doctrine\ORM\NoResultException If count query returns 0 rows
      * @throws \Doctrine\ORM\NonUniqueResultException If count query returns more than one row
      */
-    public function count(): int
+    protected function doCount(): int
     {
-        if (null === $this->count) {
-            $this->count = (int) $this->countQuery->getSingleScalarResult();
-        }
-
-        return $this->count;
+        return (int) $this->countQuery->getSingleScalarResult();
     }
 
     /**
