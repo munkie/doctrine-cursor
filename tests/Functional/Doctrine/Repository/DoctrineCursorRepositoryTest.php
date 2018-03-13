@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mnk\Tests\Functional\Doctrine;
+namespace Mnk\Tests\Functional\Doctrine\Repository;
 
 use Mnk\Cursor\CursorInterface;
 use Mnk\Tests\Functional\BaseDoctrineTestCase;

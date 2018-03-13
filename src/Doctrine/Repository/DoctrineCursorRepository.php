@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Mnk\Doctrine;
+namespace Mnk\Doctrine\Repository;
 
 use Doctrine\ORM\EntityRepository;
 

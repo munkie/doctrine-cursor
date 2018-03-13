@@ -6,7 +6,7 @@ namespace Mnk\Tests\Functional\Fixtures\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Mnk\Cursor\CursorInterface;
-use Mnk\Doctrine\DoctrineCursorRepository;
+use Mnk\Doctrine\Repository\DoctrineCursorRepository;
 use Mnk\Doctrine\DoctrineOrmQueryCursor;
 use Mnk\Tests\Functional\Fixtures\Entity\Message;
 use Mnk\Tests\Functional\Fixtures\Entity\Topic;
